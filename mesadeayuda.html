@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Help Desk TI - SENA ADSO</title>
+    <!-- Estilos CSS con Rediseño Total Dark Modern / GLPI Enterprise -->
+    <style>
+        :root {
+            --bg-principal: #0f172a;
+            --bg-secundario: #1e293b;
+            --bg-card: #334155;
+            --sena-verde: #39A900;
+            --sena-verde-glow: rgba(57, 169, 0, 0.25);
+            --glpi-accent: #38bdf8;
+            --glpi-accent-hover: #0284c7;
+            --texto-principal: #f8fafc;
+            --texto-muted: #94a3b8;
+            --borde-color: #475569;
+            --alerta-critica: #ef4444;
+            --alerta-proceso: #f59e0b;
+            --alerta-exito: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-principal);
+            color: var(--texto-principal);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Banner Superior SENA */
+        .top-sena-bar {
+            background-color: #090d16;
+            border-bottom: 1px solid var(--borde-color);
+            padding: 8px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--texto-muted);
+        }
+
+        .sena-tag {
+            background-color: var(--sena-verde);
+            color: #ffffff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        /* Layout Principal con Menú Lateral */
+        .app-layout {
+            display: flex;
+            flex: 1;
+        }
+
+        /* Sidebar Navegación GLPI */
+        aside.sidebar {
+            width: 260px;
+            background-color: var(--bg-secundario);
+            border-right: 1px solid var(--borde-color);
+            padding: 20px 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--glpi-accent);
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--borde-color);
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            background: transparent;
+            color: var(--texto-muted);
+            border: none;
+            padding: 12px 16px;
+            border-radius: 8px;
+            text-align: left;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background-color: var(--glpi-accent);
+            color: #0f172a;
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+        }
+
+        /* Área de Contenido */
+        main.content-area {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        /* Ficha Aprendiz */
+        .ficha-aprendiz {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(51, 65, 85, 0.5));
+            border: 1px solid var(--borde-color);
+            border-left: 4px solid var(--sena-verde);
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-bottom: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .ficha-aprendiz .user-details h3 {
+            font-size: 1.1rem;
+            color: var(--texto-principal);
+        }
+
+        .ficha-aprendiz .user-details p {
+            font-size: 0.85rem;
+            color: var(--texto-muted);
+        }
+
+        /* Dashboard KPIs Métricas */
+        .kpi-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .kpi-box {
+            background-color: var(--bg-secundario);
+            border: 1px solid var(--borde-color);
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .kpi-box:hover {
+            transform: translateY(-3px);
+        }
+
+        .kpi-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background-color: var(--glpi-accent);
+        }
+
+        .kpi-box.kpi-red::before { background-color: var(--alerta-critica); }
+        .kpi-box.kpi-amber::before { background-color: var(--alerta-proceso); }
+        .kpi-box.kpi-green::before { background-color: var(--alerta-exito); }
+
+        .kpi-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: var(--texto-muted);
+            letter-spacing: 0.5px;
+        }
+
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-top: 8px;
+        }
+
+        /* Contenedores de Sección / Cards */
+        .section-panel {
+            background-color: var(--bg-secundario);
+            border: 1px solid var(--borde-color);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 30px;
+        }
+
+        .section-header {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--borde-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--glpi-accent);
+        }
+
+        /* Estilos de Formularios Modernos */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 18px;
+            margin-bottom: 18px;
+        }
+
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .field-group label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--texto-muted);
+        }
+
+        .input-ctrl {
+            background-color: var(--bg-principal);
+            border: 1px solid var(--borde-color);
+            border-radius: 6px;
+            padding: 10px 14px;
+            color: var(--texto-principal);
+            font-size: 0.9rem;
+            transition: border-color 0.2s;
+        }
+
+        .input-ctrl:focus {
+            outline: none;
+            border-color: var(--glpi-accent);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+        }
+
+        /* Botones Acción */
+        .btn-action {
+            background-color: var(--glpi-accent);
+            color: #0f172a;
+            border: none;
+            padding: 11px 22px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-action:hover {
+            background-color: var(--glpi-accent-hover);
+            color: #ffffff;
+        }
+
+        .btn-sena {
+            background-color: var(--sena-verde);
+            color: #ffffff;
+        }
+
+        .btn-sena:hover {
+            background-color: #2e8b00;
+        }
+
+        .btn-mini {
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+        }
+
+        /* Tablas Oscuras Interactivas */
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table.glpi-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+            text-align: left;
+        }
+
+        table.glpi-table th {
+            background-color: var(--bg-principal);
+            color: var(--texto-muted);
+            padding: 12px 16px;
+            font-weight: 600;
+            border-bottom: 1px solid var(--borde-color);
+        }
+
+        table.glpi-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--borde-color);
+        }
+
+        table.glpi-table tr:hover {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        /* Badges / Pill Tags */
+        .status-pill {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-block;
+        }
+
+        .pill-nuevo { background-color: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+        .pill-proceso { background-color: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+        .pill-resuelto { background-color: rgba(16, 185, 129, 0.15); color: #10b981; }
+
+        .prio-alta { color: #ef4444; font-weight: 800; }
+        .prio-media { color: #f59e0b; }
+        .prio-baja { color: #94a3b8; }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        .notif-banner {
+            display: none;
+            padding: 12px 16px;
+            border-radius: 6px;
+            background-color: rgba(16, 185, 129, 0.2);
+            border: 1px solid var(--alerta-exito);
+            color: var(--alerta-exito);
+            font-size: 0.9rem;
+            margin-top: 15px;
+        }
+
+        footer {
+            background-color: #090d16;
+            border-top: 1px solid var(--borde-color);
+            padding: 16px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--texto-muted);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Banner Superior Institucional -->
+    <div class="top-sena-bar">
+        <div>
+            <span class="sena-tag">SENA</span> Centro del Diseño y Manufactura del Cuero | Regional Antioquia
+        </div>
+        <div>Plataforma ITSM Help Desk v2.6</div>
+    </div>
+
+    <!-- Contenedor App de Dos Columnas -->
+    <div class="app-layout">
+        
+        <!-- Sidebar Navegación Lateral -->
+        <aside class="sidebar">
+            <div class="brand">
+                ⚡ GLPI Enterprise
+            </div>
+            <nav class="nav-menu">
+                <button class="nav-btn active" onclick="switchTab('tab-tickets', this)">
+                    📊 Gestión de Incidentes
+                </button>
+                <button class="nav-btn" onclick="switchTab('tab-inventario', this)">
+                    💻 Activos de Infraestructura
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Contenido Central -->
+        <main class="content-area">
+            
+            <!-- Ficha Técnica Aprendiz Actualizada -->
+            <div class="ficha-aprendiz">
+                <div class="user-details">
+                    <h3>Sergio Daniel Galvis Conde</h3>
+                    <p>Programa: Tecnólogo en Análisis y Desarrollo de Software (ADSO)</p>
+                </div>
+                <div style="text-align: right;">
+                    <p><strong>Proyecto Formativo:</strong> Mesa de Ayuda TI</p>
+                    <p><strong>Línea Base:</strong> ITIL v4 / GLPI Framework</p>
+                </div>
+            </div>
+
+            <!-- Dashboard de Indicadores KPI -->
+            <div class="kpi-container">
+                <div class="kpi-box">
+                    <div class="kpi-title">Casos Nuevos</div>
+                    <div class="kpi-value" id="kpiNuevos">0</div>
+                </div>
+                <div class="kpi-box kpi-amber">
+                    <div class="kpi-title">En Atención</div>
+                    <div class="kpi-value" id="kpiProceso">0</div>
+                </div>
+                <div class="kpi-box kpi-red">
+                    <div class="kpi-title">Alta Prioridad</div>
+                    <div class="kpi-value" id="kpiCriticos">0</div>
+                </div>
+                <div class="kpi-box kpi-green">
+                    <div class="kpi-title">Resueltos</div>
+                    <div class="kpi-value" id="kpiResueltos">0</div>
+                </div>
+            </div>
+
+            <!-- PANEL 1: MESA DE AYUDA / TICKETS -->
+            <div id="tab-tickets" class="tab-panel active">
+                
+                <div class="section-panel">
+                    <div class="section-header">
+                        📝 Radicación de Caso Técnico
+                    </div>
+                    <form id="ticketForm" onsubmit="crearTicket(event)">
+                        <div class="form-grid">
+                            <div class="field-group">
+                                <label for="ticketSolicitante">Usuario Solicitante *</label>
+                                <input type="text" id="ticketSolicitante" class="input-ctrl" placeholder="Nombre completo" required>
+                            </div>
+                            <div class="field-group">
+                                <label for="ticketCategoria">Categoría ITIL *</label>
+                                <select id="ticketCategoria" class="input-ctrl" required>
+                                    <option value="Servidores & Cloud">Servidores & Cloud</option>
+                                    <option value="Hardware & Periféricos">Hardware & Periféricos</option>
+                                    <option value="Conectividad & VPN">Conectividad & VPN</option>
+                                    <option value="Bases de Datos">Bases de Datos</option>
+                                </select>
+                            </div>
+                            <div class="field-group">
+                                <label for="ticketPrioridad">Urgencia / Prioridad *</label>
+                                <select id="ticketPrioridad" class="input-ctrl" required>
+                                    <option value="Baja">Baja</option>
+                                    <option value="Media" selected>Media</option>
+                                    <option value="Alta">Alta (SLA Crítico)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="field-group" style="margin-bottom: 18px;">
+                            <label for="ticketAsunto">Descripción de la Incidencia *</label>
+                            <input type="text" id="ticketAsunto" class="input-ctrl" placeholder="Resumen del requerimiento o error presentado" required>
+                        </div>
+
+                        <button type="submit" class="btn-action">Aperturar Ticket</button>
+                    </form>
+                    <div id="alertaTicket" class="notif-banner"></div>
+                </div>
+
+                <div class="section-panel">
+                    <div class="section-header">
+                        📋 Matriz de Casos Registrados
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="glpi-table">
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Solicitante</th>
+                                    <th>Categoría</th>
+                                    <th>Asunto</th>
+                                    <th>Prioridad</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaTicketsBody">
+                                <!-- Filas JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- PANEL 2: INVENTARIO DE HARDWARE Y REDES -->
+            <div id="tab-inventario" class="tab-panel">
+                
+                <div class="section-panel">
+                    <div class="section-header">
+                        🖥️ Alta de Activo Tecnológico
+                    </div>
+                    <form id="activoForm" onsubmit="registrarActivo(event)">
+                        <div class="form-grid">
+                            <div class="field-group">
+                                <label for="activoSerial">Serial / Tag de Inventario *</label>
+                                <input type="text" id="activoSerial" class="input-ctrl" placeholder="Ej: SRV-GCP-001" required>
+                            </div>
+                            <div class="field-group">
+                                <label for="activoTipo">Tipo de Componente *</label>
+                                <select id="activoTipo" class="input-ctrl" required>
+                                    <option value="Servidor VPS">Servidor VPS</option>
+                                    <option value="Estación de Trabajo">Estación de Trabajo</option>
+                                    <option value="Router / Firewall">Router / Firewall</option>
+                                    <option value="Impresora de Red">Impresora de Red</option>
+                                </select>
+                            </div>
+                            <div class="field-group">
+                                <label for="activoUbicacion">Ubicación Física / Nube *</label>
+                                <input type="text" id="activoUbicacion" class="input-ctrl" placeholder="Ej: DataCenter / Rack 02" required>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-action btn-sena">Registrar Activo</button>
+                    </form>
+                    <div id="alertaActivo" class="notif-banner"></div>
+                </div>
+
+                <div class="section-panel">
+                    <div class="section-header">
+                        📦 Inventario de Infraestructura
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="glpi-table">
+                            <thead>
+                                <tr>
+                                    <th>Serial</th>
+                                    <th>Tipo Componente</th>
+                                    <th>Ubicación</th>
+                                    <th>Estado Operativo</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaActivosBody">
+                                <!-- Filas JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Pie de Página -->
+    <footer>
+        Desarrollado por <strong>Sergio Daniel Galvis Conde</strong> | Proyecto ADSO SENA | Mesa de Ayuda TI
+    </footer>
+
+    <!-- Lógica de Operación JavaScript -->
+    <script>
+        let tickets = [
+            { id: "INC-2026-01", solicitante: "Yeison Anacona", categoria: "Servidores & Cloud", asunto: "Fallo de memoria en instancia WildFly", prioridad: "Alta", estado: "En Proceso" },
+            { id: "INC-2026-02", solicitante: "Yefer Pastas", categoria: "Bases de Datos", asunto: "Optimización de índices en MariaDB", prioridad: "Media", estado: "Nuevo" },
+            { id: "INC-2026-03", solicitante: "Carlos Ruiz", categoria: "Conectividad & VPN", asunto: "Restablecimiento de certificado PKCS12", prioridad: "Baja", estado: "Resuelto" }
+        ];
+
+        let activos = [
+            { serial: "SRV-GCP-001", tipo: "Servidor VPS", ubicacion: "Google Cloud Platform", estado: "Operativo" },
+            { serial: "SW-COR-002", tipo: "Router / Firewall", ubicacion: "Rack Central - Sistemas", estado: "Operativo" }
+        ];
+
+        let contadorTicket = 4;
+
+        window.onload = function() {
+            renderizarTickets();
+            renderizarActivos();
+            actualizarKPIs();
+        };
+
+        function switchTab(tabId, element) {
+            document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+
+            document.getElementById(tabId).classList.add('active');
+            element.classList.add('active');
+        }
+
+        function renderizarTickets() {
+            const tbody = document.getElementById('tablaTicketsBody');
+            tbody.innerHTML = '';
+
+            tickets.forEach((t, index) => {
+                let badgeClass = "pill-nuevo";
+                if (t.estado === "En Proceso") badgeClass = "pill-proceso";
+                if (t.estado === "Resuelto") badgeClass = "pill-resuelto";
+
+                let prioClass = "prio-baja";
+                if (t.prioridad === "Media") prioClass = "prio-media";
+                if (t.prioridad === "Alta") prioClass = "prio-alta";
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${t.id}</strong></td>
+                        <td>${t.solicitante}</td>
+                        <td>${t.categoria}</td>
+                        <td>${t.asunto}</td>
+                        <td class="${prioClass}">${t.prioridad}</td>
+                        <td><span class="status-pill ${badgeClass}">${t.estado}</span></td>
+                        <td>
+                            <button onclick="avanzarEstado(${index})" class="btn-action btn-mini">Avanzar Estado</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function crearTicket(e) {
+            e.preventDefault();
+
+            const nuevo = {
+                id: "INC-2026-0" + contadorTicket++,
+                solicitante: document.getElementById('ticketSolicitante').value,
+                categoria: document.getElementById('ticketCategoria').value,
+                asunto: document.getElementById('ticketAsunto').value,
+                prioridad: document.getElementById('ticketPrioridad').value,
+                estado: "Nuevo"
+            };
+
+            tickets.unshift(nuevo);
+            renderizarTickets();
+            actualizarKPIs();
+
+            const alert = document.getElementById('alertaTicket');
+            alert.style.display = 'block';
+            alert.innerHTML = `✅ Ticket <strong>${nuevo.id}</strong> aperturado exitosamente.`;
+
+            document.getElementById('ticketForm').reset();
+            setTimeout(() => alert.style.display = 'none', 3500);
+        }
+
+        function avanzarEstado(index) {
+            if (tickets[index].estado === "Nuevo") {
+                tickets[index].estado = "En Proceso";
+            } else if (tickets[index].estado === "En Proceso") {
+                tickets[index].estado = "Resuelto";
+            }
+            renderizarTickets();
+            actualizarKPIs();
+        }
+
+        function renderizarActivos() {
+            const tbody = document.getElementById('tablaActivosBody');
+            tbody.innerHTML = '';
+
+            activos.forEach(a => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${a.serial}</strong></td>
+                        <td>${a.tipo}</td>
+                        <td>${a.ubicacion}</td>
+                        <td><span class="status-pill pill-resuelto">${a.estado}</span></td>
+                    </tr>
+                `;
+            });
+        }
+
+        function registrarActivo(e) {
+            e.preventDefault();
+
+            const nuevo = {
+                serial: document.getElementById('activoSerial').value,
+                tipo: document.getElementById('activoTipo').value,
+                ubicacion: document.getElementById('activoUbicacion').value,
+                estado: "Operativo"
+            };
+
+            activos.push(nuevo);
+            renderizarActivos();
+
+            const alert = document.getElementById('alertaActivo');
+            alert.style.display = 'block';
+            alert.innerHTML = `💻 Activo <strong>${nuevo.serial}</strong> indexado al inventario.`;
+
+            document.getElementById('activoForm').reset();
+            setTimeout(() => alert.style.display = 'none', 3500);
+        }
+
+        function actualizarKPIs() {
+            document.getElementById('kpiNuevos').innerText = tickets.filter(t => t.estado === 'Nuevo').length;
+            document.getElementById('kpiProceso').innerText = tickets.filter(t => t.estado === 'En Proceso').length;
+            document.getElementById('kpiCriticos').innerText = tickets.filter(t => t.prioridad === 'Alta').length;
+            document.getElementById('kpiResueltos').innerText = tickets.filter(t => t.estado === 'Resuelto').length;
+        }
+    </script>
+</body>
+</html>
